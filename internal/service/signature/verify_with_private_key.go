@@ -9,5 +9,6 @@ type VerifyWithPrivateKeyParams struct {
 }
 
 func (svc *Signature) VerifyWithPrivateKey(ctx context.Context, params VerifyWithPrivateKeyParams) error {
+
 	return nil
 }
