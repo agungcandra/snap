@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "database/queries"
+    schema: "database/migrations"
+    gen:
+      go:
+        package: "postgresql"
+        out: "internal/repository/postgresql"
+        sql_package: "pgx/v5"
+        emit_db_tags: true
+        emit_prepared_queries: true
+        emit_interface: true

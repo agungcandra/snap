@@ -1,33 +1,39 @@
 package signature_test
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
-	"testing"
-
+	"github.com/agungcandra/snap/internal/repository/postgresql"
 	"github.com/agungcandra/snap/internal/service/signature"
-	"github.com/stretchr/testify/assert"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func TestEncryptKey(t *testing.T) {
-	sampleRSAKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	assert.Nil(t, err)
+func (s *SignatureTestSuite) TestSaveKey() {
+	clientIDStr := uuid.NewString()
+	var clientID pgtype.UUID
+	_ = clientID.Scan(clientIDStr)
+	var keyID int64 = 1001
 
-	privateKeyBytes := x509.MarshalPKCS1PrivateKey(sampleRSAKey)
-	privateKeyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKeyBytes})
+	encryptedKey := signature.EncryptedKey{
+		EncryptedKey: []byte("randomEncryptedKey"),
+		Salt:         []byte("randomSalt"),
+		Nonce:        []byte("randomNonce"),
+	}
 
-	block, rest := pem.Decode(privateKeyPEM)
-	assert.Empty(t, rest)
-	assert.Equal(t, privateKeyBytes, block.Bytes)
+	s.Run("success_save_key", func() {
+		s.repository.EXPECT().InsertKey(s.ctx, postgresql.InsertKeyParams{
+			ClientID:     clientID,
+			EncryptedKey: encryptedKey.EncryptedKey,
+		}).Return(keyID, nil)
+		s.repository.EXPECT().InsertNonce(s.ctx, postgresql.InsertNonceParams{
+			KeyID: keyID,
+			Nonce: encryptedKey.Nonce,
+		}).Return(nil)
+		s.repository.EXPECT().InsertSalt(s.ctx, postgresql.InsertSaltParams{
+			KeyID: keyID,
+			Salt:  encryptedKey.Salt,
+		}).Return(nil)
 
-	signature := signature.NewSignature(nil, "randomSignaturePassword")
-	encrypted, salt, err := signature.EncryptRSAKey(privateKeyPEM)
-	assert.Nil(t, err)
-
-	decrypted, err := signature.DecryptRSAKey(encrypted, salt)
-	assert.Nil(t, err)
-
-	assert.Equal(t, privateKeyPEM, decrypted)
+		err := s.svc.SaveKey(s.ctx, s.repository, clientIDStr, encryptedKey)
+		s.Nil(err)
+	})
 }

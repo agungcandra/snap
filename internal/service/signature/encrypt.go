@@ -1,10 +1,13 @@
 package signature
 
 import (
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
+	"github.com/agungcandra/snap/internal/repository/postgresql"
+	"github.com/jackc/pgx/v5/pgtype"
 	"io"
 )
 
@@ -13,39 +16,91 @@ const (
 	saltSize  = 16
 )
 
-func (svc *Signature) EncryptKey(privateKey []byte, kek []byte) ([]byte, error) {
+type EncryptedKey struct {
+	EncryptedKey []byte
+	Salt         []byte
+	Nonce        []byte
+}
+
+func (svc *Signature) EncryptKey(privateKey []byte, kek []byte) ([]byte, []byte, error) {
 	block, err := aes.NewCipher(kek)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create AES cipher: %v", err)
+		return nil, nil, fmt.Errorf("failed to create AES cipher: %v", err)
 	}
 
 	nonce := make([]byte, nonceSize)
 	// Need to io.ReadFull when generate noonce to ensure that all nonce block is filled to ensure uniquness
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, fmt.Errorf("failed generate nonce: %v", err)
+		return nil, nil, fmt.Errorf("failed generate nonce: %v", err)
 	}
 
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create GCM: %v", err)
+		return nil, nil, fmt.Errorf("failed to create GCM: %v", err)
 	}
 
 	cipherText := aesGCM.Seal(nil, nonce, privateKey, nil)
-	return append(nonce, cipherText...), nil
+	return cipherText, nonce, nil
 }
 
-func (svc *Signature) EncryptRSAKey(privateKey []byte) ([]byte, []byte, error) {
+func (svc *Signature) EncryptRSAKey(privateKey []byte) (EncryptedKey, error) {
 	salt := make([]byte, saltSize)
 	// Use rand.Read is enough for generate salt
 	if _, err := rand.Read(salt); err != nil {
-		return nil, nil, fmt.Errorf("failed to generate salt: %v", err)
+		return EncryptedKey{}, fmt.Errorf("failed to generate salt: %v", err)
 	}
 
 	kek := svc.GenerateKey(salt)
-	encryptedPrivateKey, err := svc.EncryptKey(privateKey, kek)
+	encryptedPrivateKey, nonce, err := svc.EncryptKey(privateKey, kek)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to encrypt private key: %v", err)
+		return EncryptedKey{}, fmt.Errorf("failed to encrypt private key: %v", err)
 	}
 
-	return encryptedPrivateKey, salt, nil
+	return EncryptedKey{
+		EncryptedKey: encryptedPrivateKey,
+		Salt:         salt,
+		Nonce:        nonce,
+	}, nil
+}
+
+func (svc *Signature) SaveClientRSAKey(ctx context.Context, clientID string, privateKey []byte) error {
+	encryptedPrivateKey, err := svc.EncryptRSAKey(privateKey)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt private key: %v", err)
+	}
+
+	return svc.Transaction(ctx, func(qtx postgresql.Querier) error {
+		return svc.SaveKey(ctx, qtx, clientID, encryptedPrivateKey)
+	})
+}
+
+func (svc *Signature) SaveKey(ctx context.Context, repo repositoryWithoutTx, clientID string, encryptedKey EncryptedKey) error {
+	var client pgtype.UUID
+	if err := client.Scan(clientID); err != nil {
+		return fmt.Errorf("failed to parse client id: %v", err)
+	}
+
+	key, err := repo.InsertKey(ctx, postgresql.InsertKeyParams{
+		ClientID:     client,
+		EncryptedKey: encryptedKey.EncryptedKey,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to insert key: %v", err)
+	}
+
+	if err = repo.InsertNonce(ctx, postgresql.InsertNonceParams{
+		KeyID: key,
+		Nonce: encryptedKey.Nonce,
+	}); err != nil {
+		return fmt.Errorf("failed to insert nonce: %v", err)
+	}
+
+	if err = repo.InsertSalt(ctx, postgresql.InsertSaltParams{
+		KeyID: key,
+		Salt:  encryptedKey.Salt,
+	}); err != nil {
+		return fmt.Errorf("failed to insert salt: %v", err)
+	}
+
+	return nil
 }
