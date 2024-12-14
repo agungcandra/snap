@@ -7,7 +7,9 @@ import (
 	"crypto/rand"
 	"fmt"
 	"github.com/agungcandra/snap/internal/repository/postgresql"
+	"github.com/agungcandra/snap/pkg/logger"
 	"github.com/jackc/pgx/v5/pgtype"
+	"go.uber.org/zap"
 	"io"
 )
 
@@ -77,7 +79,8 @@ func (svc *Signature) SaveClientRSAKey(ctx context.Context, clientID string, pri
 func (svc *Signature) SaveKey(ctx context.Context, repo repositoryWithoutTx, clientID string, encryptedKey EncryptedKey) error {
 	var client pgtype.UUID
 	if err := client.Scan(clientID); err != nil {
-		return fmt.Errorf("failed to parse client id: %v", err)
+		logger.ErrorWithContext(ctx, err, zap.String("client_id", clientID))
+		return ErrInvalidClientID
 	}
 
 	key, err := repo.InsertKey(ctx, postgresql.InsertKeyParams{
@@ -85,21 +88,24 @@ func (svc *Signature) SaveKey(ctx context.Context, repo repositoryWithoutTx, cli
 		EncryptedKey: encryptedKey.EncryptedKey,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to insert key: %v", err)
+		logger.ErrorWithContext(ctx, err, zap.Stack("stacktrace"))
+		return ErrFailedInsertKey
 	}
 
 	if err = repo.InsertNonce(ctx, postgresql.InsertNonceParams{
 		KeyID: key,
 		Nonce: encryptedKey.Nonce,
 	}); err != nil {
-		return fmt.Errorf("failed to insert nonce: %v", err)
+		logger.ErrorWithContext(ctx, err, zap.Stack("stacktrace"))
+		return ErrFailedInsertNonce
 	}
 
 	if err = repo.InsertSalt(ctx, postgresql.InsertSaltParams{
 		KeyID: key,
 		Salt:  encryptedKey.Salt,
 	}); err != nil {
-		return fmt.Errorf("failed to insert salt: %v", err)
+		logger.ErrorWithContext(ctx, err, zap.Stack("stacktrace"))
+		return ErrFailedInsertSalt
 	}
 
 	return nil
