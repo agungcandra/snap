@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
+
 	sign "github.com/agungcandra/snap/internal/service/signature"
 )
 

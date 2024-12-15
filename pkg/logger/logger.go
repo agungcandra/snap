@@ -2,9 +2,10 @@ package logger
 
 import (
 	"context"
+	"sync"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"sync"
 )
 
 var (

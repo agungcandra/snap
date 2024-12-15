@@ -1,15 +1,10 @@
 package signature
 
 import (
-	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
-	"github.com/agungcandra/snap/internal/repository/postgresql"
-	"github.com/agungcandra/snap/pkg/logger"
-	"github.com/jackc/pgx/v5/pgtype"
-	"go.uber.org/zap"
 	"io"
 )
 
@@ -18,14 +13,52 @@ const (
 	saltSize  = 16
 )
 
-type EncryptedKey struct {
-	EncryptedKey []byte
-	Salt         []byte
-	Nonce        []byte
+// Encrypted represent encrypted payload with details related salt and nonce
+type Encrypted struct {
+	Payload []byte
+	Key     []byte
+	Nonce   []byte
+	Salt    []byte
 }
 
-func (svc *Signature) EncryptKey(privateKey []byte, kek []byte) ([]byte, []byte, error) {
-	block, err := aes.NewCipher(kek)
+type KeyGenerationFn func() ([]byte, error)
+
+func (svc *Signature) Encrypt(payload []byte, keygen KeyGenerationFn) (Encrypted, error) {
+	key, err := keygen()
+	if err != nil {
+		return Encrypted{}, err
+	}
+
+	encryptedPayload, nonce, err := svc.encrypt(payload, key)
+	if err != nil {
+		return Encrypted{}, fmt.Errorf("failed to encrypt private key: %v", err)
+	}
+
+	return Encrypted{
+		Payload: encryptedPayload,
+		Key:     key,
+		Nonce:   nonce,
+	}, nil
+}
+
+func (svc *Signature) EncryptWithPassword(payload []byte, password string) (Encrypted, error) {
+	salt := make([]byte, saltSize)
+	// Use rand.Read is enough for generate salt
+	if _, err := rand.Read(salt); err != nil {
+		return Encrypted{}, fmt.Errorf("failed to generate salt: %v", err)
+	}
+
+	encrypted, err := svc.Encrypt(payload, Pbkdf2Generator(password, salt))
+	if err != nil {
+		return Encrypted{}, nil
+	}
+
+	encrypted.Salt = salt
+	return encrypted, nil
+}
+
+func (svc *Signature) encrypt(payload []byte, key []byte) ([]byte, []byte, error) {
+	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create AES cipher: %v", err)
 	}
@@ -41,72 +74,6 @@ func (svc *Signature) EncryptKey(privateKey []byte, kek []byte) ([]byte, []byte,
 		return nil, nil, fmt.Errorf("failed to create GCM: %v", err)
 	}
 
-	cipherText := aesGCM.Seal(nil, nonce, privateKey, nil)
+	cipherText := aesGCM.Seal(nil, nonce, payload, nil)
 	return cipherText, nonce, nil
-}
-
-func (svc *Signature) EncryptRSAKey(privateKey []byte) (EncryptedKey, error) {
-	salt := make([]byte, saltSize)
-	// Use rand.Read is enough for generate salt
-	if _, err := rand.Read(salt); err != nil {
-		return EncryptedKey{}, fmt.Errorf("failed to generate salt: %v", err)
-	}
-
-	kek := svc.GenerateKey(salt)
-	encryptedPrivateKey, nonce, err := svc.EncryptKey(privateKey, kek)
-	if err != nil {
-		return EncryptedKey{}, fmt.Errorf("failed to encrypt private key: %v", err)
-	}
-
-	return EncryptedKey{
-		EncryptedKey: encryptedPrivateKey,
-		Salt:         salt,
-		Nonce:        nonce,
-	}, nil
-}
-
-func (svc *Signature) SaveClientRSAKey(ctx context.Context, clientID string, privateKey []byte) error {
-	encryptedPrivateKey, err := svc.EncryptRSAKey(privateKey)
-	if err != nil {
-		return fmt.Errorf("failed to encrypt private key: %v", err)
-	}
-
-	return svc.Transaction(ctx, func(qtx postgresql.Querier) error {
-		return svc.SaveKey(ctx, qtx, clientID, encryptedPrivateKey)
-	})
-}
-
-func (svc *Signature) SaveKey(ctx context.Context, repo repositoryWithoutTx, clientID string, encryptedKey EncryptedKey) error {
-	var client pgtype.UUID
-	if err := client.Scan(clientID); err != nil {
-		logger.ErrorWithContext(ctx, err, zap.String("client_id", clientID))
-		return ErrInvalidClientID
-	}
-
-	key, err := repo.InsertKey(ctx, postgresql.InsertKeyParams{
-		ClientID:     client,
-		EncryptedKey: encryptedKey.EncryptedKey,
-	})
-	if err != nil {
-		logger.ErrorWithContext(ctx, err, zap.Stack("stacktrace"))
-		return ErrFailedInsertKey
-	}
-
-	if err = repo.InsertNonce(ctx, postgresql.InsertNonceParams{
-		KeyID: key,
-		Nonce: encryptedKey.Nonce,
-	}); err != nil {
-		logger.ErrorWithContext(ctx, err, zap.Stack("stacktrace"))
-		return ErrFailedInsertNonce
-	}
-
-	if err = repo.InsertSalt(ctx, postgresql.InsertSaltParams{
-		KeyID: key,
-		Salt:  encryptedKey.Salt,
-	}); err != nil {
-		logger.ErrorWithContext(ctx, err, zap.Stack("stacktrace"))
-		return ErrFailedInsertSalt
-	}
-
-	return nil
 }

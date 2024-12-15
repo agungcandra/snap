@@ -2,8 +2,10 @@ package postgresql
 
 import (
 	"context"
-	"github.com/agungcandra/snap/pkg/database"
+
 	"github.com/jackc/pgx/v5"
+
+	"github.com/agungcandra/snap/pkg/database"
 )
 
 // WithTx represent wrapper for running query inside transaction block

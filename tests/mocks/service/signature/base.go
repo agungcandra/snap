@@ -13,9 +13,10 @@ import (
 	context "context"
 	reflect "reflect"
 
-	postgresql "github.com/agungcandra/snap/internal/repository/postgresql"
 	pgx "github.com/jackc/pgx/v5"
 	gomock "go.uber.org/mock/gomock"
+
+	postgresql "github.com/agungcandra/snap/internal/repository/postgresql"
 )
 
 // MockrepositoryWithoutTx is a mock of repositoryWithoutTx interface.

@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	postgresql "github.com/agungcandra/snap/internal/repository/postgresql"
 	gomock "go.uber.org/mock/gomock"
+
+	postgresql "github.com/agungcandra/snap/internal/repository/postgresql"
 )
 
 // MockQuerier is a mock of Querier interface.
