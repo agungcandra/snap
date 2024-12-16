@@ -1,4 +1,4 @@
-package signature
+package crypto
 
 import "errors"
 
@@ -11,4 +11,6 @@ var (
 	ErrFailedInsertSalt = errors.New("failed to save salt")
 	// ErrInvalidClientID error because client id is not parseable to uuid
 	ErrInvalidClientID = errors.New("invalid client id")
+	// ErrInvalidKeyGeneration error because invalid key generation algorithm
+	ErrInvalidKeyGeneration = errors.New("invalid key generation")
 )

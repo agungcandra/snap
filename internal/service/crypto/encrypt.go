@@ -1,4 +1,4 @@
-package signature
+package crypto
 
 import (
 	"crypto/aes"
@@ -23,7 +23,11 @@ type Encrypted struct {
 
 type KeyGenerationFn func() ([]byte, error)
 
-func (svc *Signature) Encrypt(payload []byte, keygen KeyGenerationFn) (Encrypted, error) {
+func (svc *Crypto) Encrypt(payload []byte, keygen KeyGenerationFn) (Encrypted, error) {
+	if keygen == nil {
+		return Encrypted{}, ErrInvalidKeyGeneration
+	}
+
 	key, err := keygen()
 	if err != nil {
 		return Encrypted{}, err
@@ -41,7 +45,7 @@ func (svc *Signature) Encrypt(payload []byte, keygen KeyGenerationFn) (Encrypted
 	}, nil
 }
 
-func (svc *Signature) EncryptWithPassword(payload []byte, password string) (Encrypted, error) {
+func (svc *Crypto) EncryptWithPassword(payload []byte, password string) (Encrypted, error) {
 	salt := make([]byte, saltSize)
 	// Use rand.Read is enough for generate salt
 	if _, err := rand.Read(salt); err != nil {
@@ -57,7 +61,7 @@ func (svc *Signature) EncryptWithPassword(payload []byte, password string) (Encr
 	return encrypted, nil
 }
 
-func (svc *Signature) encrypt(payload []byte, key []byte) ([]byte, []byte, error) {
+func (svc *Crypto) encrypt(payload []byte, key []byte) ([]byte, []byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create AES cipher: %v", err)

@@ -1,14 +1,14 @@
-package signature_test
+package crypto_test
 
 import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
 
-	sign "github.com/agungcandra/snap/internal/service/signature"
+	"github.com/agungcandra/snap/internal/service/crypto"
 )
 
-func (s *SignatureTestSuite) TestSign() {
+func (s *EncryptionTestSuite) TestSign() {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	s.Nil(err)
 
@@ -20,7 +20,7 @@ func (s *SignatureTestSuite) TestSign() {
 		s.Nil(err)
 		s.NotEmpty(base64Encoded)
 
-		err = s.svc.VerifyWithPublicKey(sign.VerifyWithPublicKeyParams{
+		err = s.svc.VerifyWithPublicKey(crypto.VerifyWithPublicKeyParams{
 			Payload:   []byte(stringToSign),
 			Signature: signature,
 			PublicKey: &privateKey.PublicKey,

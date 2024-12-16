@@ -1,4 +1,4 @@
-package signature_test
+package crypto_test
 
 import (
 	"crypto/rand"
@@ -7,14 +7,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/agungcandra/snap/internal/service/signature"
+	"github.com/agungcandra/snap/internal/service/crypto"
 )
 
 func BenchmarkPbkdf2Generator(b *testing.B) {
 	salt := make([]byte, 32)
 	_, _ = io.ReadFull(rand.Reader, salt)
 
-	fn := signature.Pbkdf2Generator("randomPasswordGenerator", salt)
+	fn := crypto.Pbkdf2Generator("randomPasswordGenerator", salt)
 
 	for i := 0; i < b.N; i++ {
 		_, _ = fn()
@@ -29,11 +29,11 @@ func TestPbkdf2Generator(t *testing.T) {
 	_, _ = io.ReadFull(rand.Reader, salt)
 
 	t.Run("simplePassword", func(t *testing.T) {
-		key, err := signature.Pbkdf2Generator("lowEntropyKey", salt)()
+		key, err := crypto.Pbkdf2Generator("lowEntropyKey", salt)()
 		assert.Nil(t, err)
 		assert.Len(t, key, 32)
 
-		otherKey, err := signature.Pbkdf2Generator("lowEntropyKey", otherSalt)()
+		otherKey, err := crypto.Pbkdf2Generator("lowEntropyKey", otherSalt)()
 		assert.Nil(t, err)
 		assert.Len(t, otherKey, 32)
 
@@ -43,11 +43,11 @@ func TestPbkdf2Generator(t *testing.T) {
 	t.Run("highEntropyPassword", func(t *testing.T) {
 		password := "thisIsPasswordWithHighLevelOfEntropyBecauseItsSizeIsSoLongThatIHavingHardTimeToComeUpWithMessage"
 
-		key, err := signature.Pbkdf2Generator(password, salt)()
+		key, err := crypto.Pbkdf2Generator(password, salt)()
 		assert.Nil(t, err)
 		assert.Len(t, key, 32)
 
-		otherKey, err := signature.Pbkdf2Generator(password, otherSalt)()
+		otherKey, err := crypto.Pbkdf2Generator(password, otherSalt)()
 		assert.Nil(t, err)
 		assert.Len(t, key, 32)
 
@@ -58,7 +58,7 @@ func TestPbkdf2Generator(t *testing.T) {
 
 func TestRandGenerator(t *testing.T) {
 	keyLength := 32 // aes256 key length
-	fn := signature.RandGenerator(keyLength)
+	fn := crypto.RandGenerator(keyLength)
 
 	numTests := 1_000_000
 	generatedKey := make(map[string]struct{})
@@ -78,7 +78,7 @@ func TestRandGenerator(t *testing.T) {
 }
 
 func BenchmarkRandGenerator(b *testing.B) {
-	fn := signature.RandGenerator(32)
+	fn := crypto.RandGenerator(32)
 	for i := 0; i < b.N; i++ {
 		_, _ = fn()
 	}

@@ -1,4 +1,4 @@
-package signature
+package crypto
 
 import (
 	"context"
@@ -18,20 +18,20 @@ type repository interface {
 	repositoryWithoutTx
 }
 
-// Signature TODO comment
-type Signature struct {
+// Crypto TODO comment
+type Crypto struct {
 	txStarter           database.PgxPool
 	signatureRepository repository
 }
 
-// NewSignature initialize new signature usecase
-func NewSignature(pool database.PgxPool, signatureRepository repository) *Signature {
-	return &Signature{
+// NewCrypto initialize new signature usecase
+func NewCrypto(pool database.PgxPool, signatureRepository repository) *Crypto {
+	return &Crypto{
 		txStarter:           pool,
 		signatureRepository: signatureRepository,
 	}
 }
 
-func (svc *Signature) Transaction(ctx context.Context, fn postgresql.TransactionActionFn) error {
+func (svc *Crypto) Transaction(ctx context.Context, fn postgresql.TransactionActionFn) error {
 	return postgresql.TransactionWrapper(ctx, svc.txStarter, svc.signatureRepository, fn)
 }

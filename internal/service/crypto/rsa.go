@@ -1,4 +1,4 @@
-package signature
+package crypto
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/agungcandra/snap/pkg/logger"
 )
 
-func (svc *Signature) SaveClientRSAKey(ctx context.Context, clientID string, privateKey []byte) error {
+func (svc *Crypto) SaveClientRSAKey(ctx context.Context, clientID string, privateKey []byte) error {
 	encryptedPrivateKey, err := svc.Encrypt(privateKey, RandGenerator(aes256KeyLength))
 	if err != nil {
 		return fmt.Errorf("failed to encrypt private key: %v", err)
@@ -22,7 +22,7 @@ func (svc *Signature) SaveClientRSAKey(ctx context.Context, clientID string, pri
 	})
 }
 
-func (svc *Signature) SaveKey(ctx context.Context, repo repositoryWithoutTx, clientID string, encryptedKey Encrypted) error {
+func (svc *Crypto) SaveKey(ctx context.Context, repo repositoryWithoutTx, clientID string, encryptedKey Encrypted) error {
 	var client pgtype.UUID
 	if err := client.Scan(clientID); err != nil {
 		logger.ErrorWithContext(ctx, err, zap.String("client_id", clientID))

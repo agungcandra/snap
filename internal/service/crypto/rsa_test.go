@@ -1,4 +1,4 @@
-package signature_test
+package crypto_test
 
 import (
 	"errors"
@@ -7,16 +7,16 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/agungcandra/snap/internal/repository/postgresql"
-	"github.com/agungcandra/snap/internal/service/signature"
+	"github.com/agungcandra/snap/internal/service/crypto"
 )
 
-func (s *SignatureTestSuite) TestSaveKey() {
+func (s *EncryptionTestSuite) TestSaveKey() {
 	clientIDStr := uuid.NewString()
 	var clientID pgtype.UUID
 	_ = clientID.Scan(clientIDStr)
 	var keyID int64 = 1001
 
-	encryptedKey := signature.Encrypted{
+	encryptedKey := crypto.Encrypted{
 		Payload: []byte("randomEncryptedKey"),
 		Salt:    []byte("randomSalt"),
 		Nonce:   []byte("randomNonce"),
@@ -47,7 +47,7 @@ func (s *SignatureTestSuite) TestSaveKey() {
 		}).Return(keyID, errors.New("internal server error"))
 
 		err := s.svc.SaveKey(s.ctx, s.repository, clientIDStr, encryptedKey)
-		s.ErrorIs(err, signature.ErrFailedInsertKey)
+		s.ErrorIs(err, crypto.ErrFailedInsertKey)
 	})
 
 	s.Run("failed_insert_nonce", func() {
@@ -61,7 +61,7 @@ func (s *SignatureTestSuite) TestSaveKey() {
 		}).Return(errors.New("internal server error"))
 
 		err := s.svc.SaveKey(s.ctx, s.repository, clientIDStr, encryptedKey)
-		s.ErrorIs(err, signature.ErrFailedInsertNonce)
+		s.ErrorIs(err, crypto.ErrFailedInsertNonce)
 	})
 
 	s.Run("failed_insert_salt", func() {
@@ -79,11 +79,11 @@ func (s *SignatureTestSuite) TestSaveKey() {
 		}).Return(errors.New("internal server error"))
 
 		err := s.svc.SaveKey(s.ctx, s.repository, clientIDStr, encryptedKey)
-		s.ErrorIs(err, signature.ErrFailedInsertSalt)
+		s.ErrorIs(err, crypto.ErrFailedInsertSalt)
 	})
 
 	s.Run("invalid_client_id", func() {
 		err := s.svc.SaveKey(s.ctx, s.repository, "randomClientID", encryptedKey)
-		s.ErrorIs(err, signature.ErrInvalidClientID)
+		s.ErrorIs(err, crypto.ErrInvalidClientID)
 	})
 }
