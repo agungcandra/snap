@@ -13,9 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	postgresql "github.com/agungcandra/snap/internal/repository/postgresql"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockQuerier is a mock of Querier interface.
@@ -41,6 +40,36 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 	return m.recorder
 }
 
+// FindLatestClientKeyByName mocks base method.
+func (m *MockQuerier) FindLatestClientKeyByName(ctx context.Context, name string) (postgresql.ClientKey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindLatestClientKeyByName", ctx, name)
+	ret0, _ := ret[0].(postgresql.ClientKey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindLatestClientKeyByName indicates an expected call of FindLatestClientKeyByName.
+func (mr *MockQuerierMockRecorder) FindLatestClientKeyByName(ctx, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindLatestClientKeyByName", reflect.TypeOf((*MockQuerier)(nil).FindLatestClientKeyByName), ctx, name)
+}
+
+// FindLatestKeyStorageByName mocks base method.
+func (m *MockQuerier) FindLatestKeyStorageByName(ctx context.Context, name string) (postgresql.KeyStorage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindLatestKeyStorageByName", ctx, name)
+	ret0, _ := ret[0].(postgresql.KeyStorage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindLatestKeyStorageByName indicates an expected call of FindLatestKeyStorageByName.
+func (mr *MockQuerierMockRecorder) FindLatestKeyStorageByName(ctx, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindLatestKeyStorageByName", reflect.TypeOf((*MockQuerier)(nil).FindLatestKeyStorageByName), ctx, name)
+}
+
 // InsertClient mocks base method.
 func (m *MockQuerier) InsertClient(ctx context.Context, arg postgresql.InsertClientParams) (postgresql.Client, error) {
 	m.ctrl.T.Helper()
@@ -56,45 +85,30 @@ func (mr *MockQuerierMockRecorder) InsertClient(ctx, arg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertClient", reflect.TypeOf((*MockQuerier)(nil).InsertClient), ctx, arg)
 }
 
-// InsertKey mocks base method.
-func (m *MockQuerier) InsertKey(ctx context.Context, arg postgresql.InsertKeyParams) (int64, error) {
+// InsertClientKey mocks base method.
+func (m *MockQuerier) InsertClientKey(ctx context.Context, arg postgresql.InsertClientKeyParams) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InsertKey", ctx, arg)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// InsertKey indicates an expected call of InsertKey.
-func (mr *MockQuerierMockRecorder) InsertKey(ctx, arg any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertKey", reflect.TypeOf((*MockQuerier)(nil).InsertKey), ctx, arg)
-}
-
-// InsertNonce mocks base method.
-func (m *MockQuerier) InsertNonce(ctx context.Context, arg postgresql.InsertNonceParams) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InsertNonce", ctx, arg)
+	ret := m.ctrl.Call(m, "InsertClientKey", ctx, arg)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// InsertNonce indicates an expected call of InsertNonce.
-func (mr *MockQuerierMockRecorder) InsertNonce(ctx, arg any) *gomock.Call {
+// InsertClientKey indicates an expected call of InsertClientKey.
+func (mr *MockQuerierMockRecorder) InsertClientKey(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertNonce", reflect.TypeOf((*MockQuerier)(nil).InsertNonce), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertClientKey", reflect.TypeOf((*MockQuerier)(nil).InsertClientKey), ctx, arg)
 }
 
-// InsertSalt mocks base method.
-func (m *MockQuerier) InsertSalt(ctx context.Context, arg postgresql.InsertSaltParams) error {
+// InsertKeyStorage mocks base method.
+func (m *MockQuerier) InsertKeyStorage(ctx context.Context, arg postgresql.InsertKeyStorageParams) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InsertSalt", ctx, arg)
+	ret := m.ctrl.Call(m, "InsertKeyStorage", ctx, arg)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// InsertSalt indicates an expected call of InsertSalt.
-func (mr *MockQuerierMockRecorder) InsertSalt(ctx, arg any) *gomock.Call {
+// InsertKeyStorage indicates an expected call of InsertKeyStorage.
+func (mr *MockQuerierMockRecorder) InsertKeyStorage(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertSalt", reflect.TypeOf((*MockQuerier)(nil).InsertSalt), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertKeyStorage", reflect.TypeOf((*MockQuerier)(nil).InsertKeyStorage), ctx, arg)
 }

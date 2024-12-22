@@ -12,10 +12,9 @@ package mock_postgresql
 import (
 	reflect "reflect"
 
+	postgresql "github.com/agungcandra/snap/internal/repository/postgresql"
 	pgx "github.com/jackc/pgx/v5"
 	gomock "go.uber.org/mock/gomock"
-
-	postgresql "github.com/agungcandra/snap/internal/repository/postgresql"
 )
 
 // MockWithTx is a mock of WithTx interface.

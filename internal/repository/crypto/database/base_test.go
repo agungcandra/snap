@@ -1,48 +1,48 @@
-package crypto_test
+package database_test
 
 import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"github.com/agungcandra/snap/internal/repository/crypto/database"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/mock/gomock"
 
-	"github.com/agungcandra/snap/internal/service/crypto"
-	mock_database "github.com/agungcandra/snap/tests/mocks/pkg/database"
-	mock_crypto "github.com/agungcandra/snap/tests/mocks/service/crypto"
+	mock_crypto "github.com/agungcandra/snap/tests/mocks/repository/crypto/database"
 )
 
 type EncryptionTestSuite struct {
 	suite.Suite
 
-	ctx        context.Context
-	ctrl       *gomock.Controller
-	repository *mock_crypto.Mockrepository
-	pool       *mock_database.MockPgxPool
+	ctx          context.Context
+	ctrl         *gomock.Controller
+	keyRetriever *mock_crypto.MockEncryptionKeyRetriever
 
-	password   string
+	sampleKey  []byte
 	privateKey *rsa.PrivateKey
 	der        []byte
 
-	svc *crypto.Crypto
+	svc *database.Crypto
 }
 
 func (s *EncryptionTestSuite) SetupTest() {
 	s.ctx = context.Background()
 	s.ctrl = gomock.NewController(s.T())
-	s.password = "randomPassword"
-	s.pool = mock_database.NewMockPgxPool(s.ctrl)
-	s.repository = mock_crypto.NewMockrepository(s.ctrl)
+	s.keyRetriever = mock_crypto.NewMockEncryptionKeyRetriever(s.ctrl)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	s.Nil(err)
 	s.privateKey = privateKey
 	s.der = x509.MarshalPKCS1PrivateKey(s.privateKey)
 
-	s.svc = crypto.NewCrypto(s.pool, s.repository)
+	s.sampleKey = make([]byte, 32)
+	_, _ = io.ReadFull(rand.Reader, s.sampleKey)
+
+	s.svc = database.NewCrypto(s.keyRetriever)
 }
 
 func (s *EncryptionTestSuite) TearDownTest() {

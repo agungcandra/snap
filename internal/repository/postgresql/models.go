@@ -15,21 +15,19 @@ type Client struct {
 	UpdatedAt pgtype.Timestamp `db:"updated_at"`
 }
 
-type Key struct {
-	ID           int64            `db:"id"`
-	ClientID     pgtype.UUID      `db:"client_id"`
-	EncryptedKey []byte           `db:"encrypted_key"`
-	CreatedAt    pgtype.Timestamp `db:"created_at"`
-}
-
-type Nonce struct {
-	KeyID     int64            `db:"key_id"`
+type ClientKey struct {
+	ID        int64            `db:"id"`
+	Name      string           `db:"name"`
+	Version   int32            `db:"version"`
+	Data      []byte           `db:"data"`
 	Nonce     []byte           `db:"nonce"`
 	CreatedAt pgtype.Timestamp `db:"created_at"`
 }
 
-type Salt struct {
-	KeyID     int64            `db:"key_id"`
-	Salt      []byte           `db:"salt"`
+type KeyStorage struct {
+	ID        int64            `db:"id"`
+	Name      string           `db:"name"`
+	Version   int32            `db:"version"`
+	Data      []byte           `db:"data"`
 	CreatedAt pgtype.Timestamp `db:"created_at"`
 }

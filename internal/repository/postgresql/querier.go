@@ -9,10 +9,11 @@ import (
 )
 
 type Querier interface {
+	FindLatestClientKeyByName(ctx context.Context, name string) (ClientKey, error)
+	FindLatestKeyStorageByName(ctx context.Context, name string) (KeyStorage, error)
 	InsertClient(ctx context.Context, arg InsertClientParams) (Client, error)
-	InsertKey(ctx context.Context, arg InsertKeyParams) (int64, error)
-	InsertNonce(ctx context.Context, arg InsertNonceParams) error
-	InsertSalt(ctx context.Context, arg InsertSaltParams) error
+	InsertClientKey(ctx context.Context, arg InsertClientKeyParams) error
+	InsertKeyStorage(ctx context.Context, arg InsertKeyStorageParams) error
 }
 
 var _ Querier = (*Queries)(nil)

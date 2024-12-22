@@ -1,11 +1,10 @@
-package crypto_test
+package database_test
 
 import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
-
-	"github.com/agungcandra/snap/internal/service/crypto"
+	"github.com/agungcandra/snap/internal/repository/crypto/database"
 )
 
 func (s *EncryptionTestSuite) TestSign() {
@@ -20,7 +19,7 @@ func (s *EncryptionTestSuite) TestSign() {
 		s.Nil(err)
 		s.NotEmpty(base64Encoded)
 
-		err = s.svc.VerifyWithPublicKey(crypto.VerifyWithPublicKeyParams{
+		err = s.svc.VerifyWithPublicKey(database.VerifyWithPublicKeyParams{
 			Payload:   []byte(stringToSign),
 			Signature: signature,
 			PublicKey: &privateKey.PublicKey,
