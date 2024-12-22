@@ -5,13 +5,13 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
-	"github.com/agungcandra/snap/internal/repository/crypto/database"
 	"io"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/mock/gomock"
 
+	"github.com/agungcandra/snap/internal/repository/crypto/database"
 	mock_crypto "github.com/agungcandra/snap/tests/mocks/repository/crypto/database"
 )
 
@@ -29,7 +29,7 @@ type EncryptionTestSuite struct {
 	svc *database.Crypto
 }
 
-func (s *EncryptionTestSuite) SetupTest() {
+func (s *EncryptionTestSuite) SetupSuite() {
 	s.ctx = context.Background()
 	s.ctrl = gomock.NewController(s.T())
 	s.keyRetriever = mock_crypto.NewMockEncryptionKeyRetriever(s.ctrl)
@@ -45,7 +45,7 @@ func (s *EncryptionTestSuite) SetupTest() {
 	s.svc = database.NewCrypto(s.keyRetriever)
 }
 
-func (s *EncryptionTestSuite) TearDownTest() {
+func (s *EncryptionTestSuite) TearDownSuite() {
 	s.ctrl.Finish()
 }
 

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
+
 	"github.com/agungcandra/snap/internal/repository/crypto/database"
 )
 

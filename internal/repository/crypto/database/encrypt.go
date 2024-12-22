@@ -6,8 +6,9 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
-	"github.com/agungcandra/snap/internal/repository/crypto"
 	"io"
+
+	"github.com/agungcandra/snap/internal/repository/crypto"
 )
 
 func (svc *Crypto) Encrypt(ctx context.Context, req crypto.EncryptRequest) (crypto.EncryptResponse, error) {

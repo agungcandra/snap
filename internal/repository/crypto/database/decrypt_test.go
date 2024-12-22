@@ -3,8 +3,9 @@ package database_test
 import (
 	"crypto/rand"
 	"errors"
-	"github.com/agungcandra/snap/internal/repository/crypto"
 	"io"
+
+	"github.com/agungcandra/snap/internal/repository/crypto"
 )
 
 func (s *EncryptionTestSuite) TestDecrypt() {

@@ -2,6 +2,7 @@ package database_test
 
 import (
 	"errors"
+
 	"github.com/agungcandra/snap/internal/repository/crypto"
 )
 

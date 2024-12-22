@@ -6,7 +6,9 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"errors"
-	"github.com/agungcandra/snap/internal/entity"
+
+	"github.com/jackc/pgx/v5"
+
 	"github.com/agungcandra/snap/internal/repository/postgresql"
 )
 
@@ -18,8 +20,7 @@ const (
 type EncryptionKeyGenerationFunc func(name string) ([]byte, error)
 
 type EncryptionKeyStorage struct {
-	repository EncryptionKeyRepository
-
+	repository        EncryptionKeyRepository
 	keyGenerationFunc EncryptionKeyGenerationFunc
 
 	privateKey *rsa.PrivateKey
@@ -37,7 +38,7 @@ func NewEncryptionKeyStorage(keyGenerationFn EncryptionKeyGenerationFunc, reposi
 
 func (svc *EncryptionKeyStorage) GenerateKey(ctx context.Context, name string) ([]byte, error) {
 	existingKey, err := svc.retrieveKey(ctx, name)
-	if err != nil && errors.Is(err, entity.ErrNotFound) {
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, err
 	}
 	if err == nil {
@@ -49,10 +50,6 @@ func (svc *EncryptionKeyStorage) GenerateKey(ctx context.Context, name string) (
 
 func (svc *EncryptionKeyStorage) RetrieveKey(ctx context.Context, name string) ([]byte, error) {
 	return svc.retrieveKey(ctx, name)
-}
-
-func (svc *EncryptionKeyStorage) decryptKey(cipher []byte) ([]byte, error) {
-	return rsa.DecryptOAEP(sha256.New(), rand.Reader, svc.privateKey, cipher, nil)
 }
 
 func (svc *EncryptionKeyStorage) generateKey(ctx context.Context, name string) ([]byte, error) {
