@@ -1,2 +1,2 @@
 -- name: InsertClient :one
-INSERT INTO clients(id, name) VALUES (@id, @name) RETURNING *;
+INSERT INTO clients(id, name, public_key) VALUES (@id, @name, @public_key) RETURNING *;

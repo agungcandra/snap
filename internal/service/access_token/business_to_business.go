@@ -1,9 +1,9 @@
 package accesstoken
 
-import "github.com/agungcandra/snap/internal/service/codes"
+import (
+	"context"
 
-const (
-	defaultExpiresIn = 900
+	"github.com/agungcandra/snap/internal/service/codes"
 )
 
 type BusinessToBusinessParams struct {
@@ -26,4 +26,7 @@ type BusinessToBusinessResult struct {
 	AdditionalInfo map[string]string
 }
 
-func (svc *AccessToken) BusinessToBusiness() {}
+func (svc *AccessToken) BusinessToBusiness(ctx context.Context, params BusinessToBusinessParams) (BusinessToBusinessResult, error) {
+
+	return BusinessToBusinessResult{}, nil
+}

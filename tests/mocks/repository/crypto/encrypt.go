@@ -14,6 +14,8 @@ import (
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
+
+	crypto "github.com/agungcandra/snap/internal/repository/crypto"
 )
 
 // MockCrypto is a mock of Crypto interface.
@@ -40,25 +42,31 @@ func (m *MockCrypto) EXPECT() *MockCryptoMockRecorder {
 }
 
 // Decrypt mocks base method.
-func (m *MockCrypto) Decrypt(ctx context.Context) {
+func (m *MockCrypto) Decrypt(ctx context.Context, req crypto.DecryptRequest) (crypto.DecryptResponse, error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Decrypt", ctx)
+	ret := m.ctrl.Call(m, "Decrypt", ctx, req)
+	ret0, _ := ret[0].(crypto.DecryptResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Decrypt indicates an expected call of Decrypt.
-func (mr *MockCryptoMockRecorder) Decrypt(ctx any) *gomock.Call {
+func (mr *MockCryptoMockRecorder) Decrypt(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Decrypt", reflect.TypeOf((*MockCrypto)(nil).Decrypt), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Decrypt", reflect.TypeOf((*MockCrypto)(nil).Decrypt), ctx, req)
 }
 
 // Encrypt mocks base method.
-func (m *MockCrypto) Encrypt(ctx context.Context, payload []byte) {
+func (m *MockCrypto) Encrypt(ctx context.Context, req crypto.EncryptRequest) (crypto.EncryptResponse, error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Encrypt", ctx, payload)
+	ret := m.ctrl.Call(m, "Encrypt", ctx, req)
+	ret0, _ := ret[0].(crypto.EncryptResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Encrypt indicates an expected call of Encrypt.
-func (mr *MockCryptoMockRecorder) Encrypt(ctx, payload any) *gomock.Call {
+func (mr *MockCryptoMockRecorder) Encrypt(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encrypt", reflect.TypeOf((*MockCrypto)(nil).Encrypt), ctx, payload)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encrypt", reflect.TypeOf((*MockCrypto)(nil).Encrypt), ctx, req)
 }

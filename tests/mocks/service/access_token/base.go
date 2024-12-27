@@ -10,7 +10,12 @@
 package mock_accesstoken
 
 import (
+	context "context"
+	reflect "reflect"
+
 	gomock "go.uber.org/mock/gomock"
+
+	postgresql "github.com/agungcandra/snap/internal/repository/postgresql"
 )
 
 // MockaccessTokenRepository is a mock of accessTokenRepository interface.
@@ -34,4 +39,19 @@ func NewMockaccessTokenRepository(ctrl *gomock.Controller) *MockaccessTokenRepos
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockaccessTokenRepository) EXPECT() *MockaccessTokenRepositoryMockRecorder {
 	return m.recorder
+}
+
+// InsertClient mocks base method.
+func (m *MockaccessTokenRepository) InsertClient(ctx context.Context, arg postgresql.InsertClientParams) (postgresql.Client, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertClient", ctx, arg)
+	ret0, _ := ret[0].(postgresql.Client)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InsertClient indicates an expected call of InsertClient.
+func (mr *MockaccessTokenRepositoryMockRecorder) InsertClient(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertClient", reflect.TypeOf((*MockaccessTokenRepository)(nil).InsertClient), ctx, arg)
 }

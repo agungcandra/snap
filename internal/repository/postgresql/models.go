@@ -11,6 +11,7 @@ import (
 type Client struct {
 	ID        pgtype.UUID      `db:"id"`
 	Name      string           `db:"name"`
+	PublicKey []byte           `db:"public_key"`
 	CreatedAt pgtype.Timestamp `db:"created_at"`
 	UpdatedAt pgtype.Timestamp `db:"updated_at"`
 }
