@@ -41,6 +41,21 @@ func (m *MockaccessTokenRepository) EXPECT() *MockaccessTokenRepositoryMockRecor
 	return m.recorder
 }
 
+// FindClientByID mocks base method.
+func (m *MockaccessTokenRepository) FindClientByID(ctx context.Context, id string) (postgresql.Client, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindClientByID", ctx, id)
+	ret0, _ := ret[0].(postgresql.Client)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindClientByID indicates an expected call of FindClientByID.
+func (mr *MockaccessTokenRepositoryMockRecorder) FindClientByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindClientByID", reflect.TypeOf((*MockaccessTokenRepository)(nil).FindClientByID), ctx, id)
+}
+
 // InsertClient mocks base method.
 func (m *MockaccessTokenRepository) InsertClient(ctx context.Context, arg postgresql.InsertClientParams) (postgresql.Client, error) {
 	m.ctrl.T.Helper()

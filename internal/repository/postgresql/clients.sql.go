@@ -7,18 +7,33 @@ package postgresql
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const findClientByID = `-- name: FindClientByID :one
+SELECT id, name, public_key, created_at, updated_at FROM clients WHERE id = $1
+`
+
+func (q *Queries) FindClientByID(ctx context.Context, id string) (Client, error) {
+	row := q.db.QueryRow(ctx, findClientByID, id)
+	var i Client
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.PublicKey,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
 
 const insertClient = `-- name: InsertClient :one
 INSERT INTO clients(id, name, public_key) VALUES ($1, $2, $3) RETURNING id, name, public_key, created_at, updated_at
 `
 
 type InsertClientParams struct {
-	ID        pgtype.UUID `db:"id"`
-	Name      string      `db:"name"`
-	PublicKey []byte      `db:"public_key"`
+	ID        string `db:"id"`
+	Name      string `db:"name"`
+	PublicKey []byte `db:"public_key"`
 }
 
 func (q *Queries) InsertClient(ctx context.Context, arg InsertClientParams) (Client, error) {

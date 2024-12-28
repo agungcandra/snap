@@ -21,6 +21,7 @@ type AccessTokenTestSuite struct {
 	repo           *mock_accesstoken.MockaccessTokenRepository
 	cryptoProvider *mock_crypto.MockCrypto
 	sampleUUID     string
+	hmacSecret     []byte
 
 	svc *accesstoken.AccessToken
 }
@@ -32,12 +33,13 @@ func (s *AccessTokenTestSuite) SetupSuite() {
 	s.repo = mock_accesstoken.NewMockaccessTokenRepository(s.ctrl)
 	s.cryptoProvider = mock_crypto.NewMockCrypto(s.ctrl)
 	s.sampleUUID = uuid.NewString()
+	s.hmacSecret = []byte("super-secret-key")
 
 	accesstoken.NewClientKeyGenerator = func() string {
 		return s.sampleUUID
 	}
 
-	s.svc = accesstoken.NewAccessToken(s.repo, s.cryptoProvider)
+	s.svc = accesstoken.NewAccessToken(s.repo, s.cryptoProvider, string(s.hmacSecret))
 }
 
 func (s *AccessTokenTestSuite) TearDownSuite() {

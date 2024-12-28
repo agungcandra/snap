@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"go.uber.org/zap"
 
 	"github.com/agungcandra/snap/internal/repository/crypto"
@@ -39,12 +38,6 @@ func (svc *AccessToken) CreateClient(ctx context.Context, params CreateClientPar
 	}
 
 	newClientID := NewClientKeyGenerator()
-	var clientID pgtype.UUID
-	if err = clientID.Scan(newClientID); err != nil {
-		logger.ErrorWithContext(ctx, err)
-		return postgresql.Client{}, ErrFailedGenerateClientID
-	}
-
 	encryptedPublicKey, err := svc.cryptoProvider.Encrypt(ctx, crypto.EncryptRequest{
 		Name:      newClientID,
 		PlainText: params.PublicKey,
@@ -54,7 +47,7 @@ func (svc *AccessToken) CreateClient(ctx context.Context, params CreateClientPar
 	}
 
 	client, err := svc.repo.InsertClient(ctx, postgresql.InsertClientParams{
-		ID:        clientID,
+		ID:        newClientID,
 		Name:      params.Name,
 		PublicKey: encryptedPublicKey.Ciphertext,
 	})

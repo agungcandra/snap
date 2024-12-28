@@ -41,6 +41,21 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 	return m.recorder
 }
 
+// FindClientByID mocks base method.
+func (m *MockQuerier) FindClientByID(ctx context.Context, id string) (postgresql.Client, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindClientByID", ctx, id)
+	ret0, _ := ret[0].(postgresql.Client)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindClientByID indicates an expected call of FindClientByID.
+func (mr *MockQuerierMockRecorder) FindClientByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindClientByID", reflect.TypeOf((*MockQuerier)(nil).FindClientByID), ctx, id)
+}
+
 // FindLatestClientKeyByName mocks base method.
 func (m *MockQuerier) FindLatestClientKeyByName(ctx context.Context, name string) (postgresql.ClientKey, error) {
 	m.ctrl.T.Helper()

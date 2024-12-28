@@ -8,6 +8,7 @@ import (
 )
 
 type accessTokenRepository interface {
+	FindClientByID(ctx context.Context, id string) (postgresql.Client, error)
 	InsertClient(ctx context.Context, arg postgresql.InsertClientParams) (postgresql.Client, error)
 }
 
@@ -15,11 +16,14 @@ type accessTokenRepository interface {
 type AccessToken struct {
 	repo           accessTokenRepository
 	cryptoProvider crypto.Crypto
+
+	hmacSecretKey []byte
 }
 
-func NewAccessToken(repo accessTokenRepository, cryptoProvider crypto.Crypto) *AccessToken {
+func NewAccessToken(repo accessTokenRepository, cryptoProvider crypto.Crypto, hmacSecret string) *AccessToken {
 	return &AccessToken{
 		repo:           repo,
 		cryptoProvider: cryptoProvider,
+		hmacSecretKey:  []byte(hmacSecret),
 	}
 }

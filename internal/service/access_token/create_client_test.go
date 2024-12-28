@@ -8,8 +8,6 @@ import (
 	"crypto/x509"
 	"errors"
 
-	"github.com/jackc/pgx/v5/pgtype"
-
 	"github.com/agungcandra/snap/internal/repository/crypto"
 	"github.com/agungcandra/snap/internal/repository/postgresql"
 	accesstoken "github.com/agungcandra/snap/internal/service/access_token"
@@ -28,11 +26,8 @@ func (s *AccessTokenTestSuite) TestCreateClient() {
 	}
 	encryptedKey := []byte("sample-encrypted-key")
 
-	var clientID pgtype.UUID
-	_ = clientID.Scan(s.sampleUUID)
-
 	client := postgresql.Client{
-		ID:        clientID,
+		ID:        s.sampleUUID,
 		Name:      params.Name,
 		PublicKey: encryptedKey,
 	}
@@ -46,7 +41,7 @@ func (s *AccessTokenTestSuite) TestCreateClient() {
 			Ciphertext: encryptedKey,
 		}, nil)
 		s.repo.EXPECT().InsertClient(s.ctx, postgresql.InsertClientParams{
-			ID:        clientID,
+			ID:        s.sampleUUID,
 			Name:      params.Name,
 			PublicKey: encryptedKey,
 		}).Return(client, nil)
@@ -79,21 +74,6 @@ func (s *AccessTokenTestSuite) TestCreateClient() {
 		s.ErrorIs(err, accesstoken.ErrInvalidParsePublicKey)
 	})
 
-	s.Run("invalid_uuid", func() {
-		accesstoken.NewClientKeyGenerator = func() string {
-			return "invalid-uuid"
-		}
-		defer func() {
-			accesstoken.NewClientKeyGenerator = func() string {
-				return s.sampleUUID
-			}
-		}()
-
-		result, err := s.svc.CreateClient(s.ctx, params)
-		s.Empty(result)
-		s.ErrorIs(err, accesstoken.ErrFailedGenerateClientID)
-	})
-
 	s.Run("failed_encrypt_key", func() {
 		s.cryptoProvider.EXPECT().Encrypt(s.ctx, crypto.EncryptRequest{
 			Name:      s.sampleUUID,
@@ -114,7 +94,7 @@ func (s *AccessTokenTestSuite) TestCreateClient() {
 			Ciphertext: encryptedKey,
 		}, nil)
 		s.repo.EXPECT().InsertClient(s.ctx, postgresql.InsertClientParams{
-			ID:        clientID,
+			ID:        s.sampleUUID,
 			Name:      params.Name,
 			PublicKey: encryptedKey,
 		}).Return(postgresql.Client{}, errors.New("internal server error"))

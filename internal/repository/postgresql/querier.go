@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	FindClientByID(ctx context.Context, id string) (Client, error)
 	FindLatestClientKeyByName(ctx context.Context, name string) (ClientKey, error)
 	FindLatestKeyStorageByName(ctx context.Context, name string) (KeyStorage, error)
 	InsertClient(ctx context.Context, arg InsertClientParams) (Client, error)
